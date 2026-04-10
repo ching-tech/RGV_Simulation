@@ -38,6 +38,7 @@ type Action =
   | { type: 'CLEAR_HISTORY' }
   | { type: 'SET_LAST_RESULT'; payload: TaskResult | null }
   | { type: 'SET_LAST_FLOW_RESULT'; payload: FlowTaskResult | null }
+  | { type: 'LOAD_CONFIG'; payload: { rgv: RGVConfig; track: TrackConfig; storages: StorageLocation[] } }
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -69,6 +70,16 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, lastResult: action.payload, lastFlowResult: null }
     case 'SET_LAST_FLOW_RESULT':
       return { ...state, lastFlowResult: action.payload, lastResult: null }
+    case 'LOAD_CONFIG':
+      return {
+        ...defaultState,
+        rgv: { ...defaultState.rgv, ...action.payload.rgv },
+        track: { ...defaultState.track, ...action.payload.track },
+        storages: action.payload.storages.map(s => ({ width: 600, depth: 500, ...s })),
+        lastResult: null,
+        lastFlowResult: null,
+        history: [],
+      }
     default:
       return state
   }

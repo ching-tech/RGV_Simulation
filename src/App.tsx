@@ -27,11 +27,48 @@ import type { AnimationState } from './types'
 type SideTab = 'rgv' | 'track' | 'storage'
 
 function SimulationPage() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const [animState, setAnimState] = useState<AnimationState | null>(null)
   const [sideTab, setSideTab] = useState<SideTab>('rgv')
   const [openStorageId, setOpenStorageId] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [importError, setImportError] = useState('')
+
+  const exportConfig = useCallback(() => {
+    const data = JSON.stringify({ version: 1, rgv: state.rgv, track: state.track, storages: state.storages }, null, 2)
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'rgv-config.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [state.rgv, state.track, state.storages])
+
+  const importConfig = useCallback(() => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = () => {
+      const file = input.files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result as string)
+          if (!parsed.rgv || !parsed.track || !Array.isArray(parsed.storages)) {
+            throw new Error('格式錯誤')
+          }
+          dispatch({ type: 'LOAD_CONFIG', payload: { rgv: parsed.rgv, track: parsed.track, storages: parsed.storages } })
+        } catch {
+          setImportError('檔案格式錯誤，請選擇正確的設定檔')
+          setTimeout(() => setImportError(''), 3000)
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
+  }, [dispatch])
   // For flow mode: track which step is currently animating (for SVG highlighting)
   const [flowAnimStepIndex, setFlowAnimStepIndex] = useState(0)
 
@@ -125,6 +162,23 @@ function SimulationPage() {
       <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-3">
         <div className="text-lg font-bold text-blue-700">RGV 模擬系統</div>
         <div className="text-xs text-gray-400">Rail Guided Vehicle Simulator</div>
+        <div className="ml-auto flex items-center gap-2">
+          {importError && (
+            <span className="text-xs text-red-500">{importError}</span>
+          )}
+          <button
+            onClick={exportConfig}
+            className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
+          >
+            ↓ 匯出設定
+          </button>
+          <button
+            onClick={importConfig}
+            className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
+          >
+            ↑ 匯入設定
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
