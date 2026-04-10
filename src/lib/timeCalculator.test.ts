@@ -67,12 +67,12 @@ describe('calcSequentialTask — 12 steps', () => {
     fork: axis(300, 200, 200),
   }
   const pickStorage: StorageLocation = {
-    id: 'A', name: 'A', position: 2000, side: 'left', layers: 1,
+    id: 'A', name: 'A', position: 2000, side: 'left', layers: 1, width: 600, depth: 500,
     layer1: { pickHeight: 200, pickDepth: 800, placeHeight: 400, placeDepth: 800 },
     layer2: { pickHeight: 200, pickDepth: 800, placeHeight: 400, placeDepth: 800 },
   }
   const placeStorage: StorageLocation = {
-    id: 'B', name: 'B', position: 5000, side: 'right', layers: 1,
+    id: 'B', name: 'B', position: 5000, side: 'right', layers: 1, width: 600, depth: 500,
     layer1: { pickHeight: 300, pickDepth: 600, placeHeight: 500, placeDepth: 600 },
     layer2: { pickHeight: 300, pickDepth: 600, placeHeight: 500, placeDepth: 600 },
   }
